@@ -26,6 +26,7 @@
  ;; #:argv (list "3" "6" "+6" "2")
  ;; #:argv (list "--keep" "2" "--dice" "3" "--modifier" "+6" "--sides" "6")
  ;; #:argv (list "--dice" "4" "--sides" "6" "--keep" "3")
+ ;; #:argv (list "--keep" "2" "--dice" "1" "--modifier" "+6" "--sides" "6")
  ;; #:argv (list "--help")
  #:usage-help
  ""
@@ -97,6 +98,12 @@
    (cond [(< dice 1) (begin
                        (displayln "dice must be greater than 0.")
                        (displayln DIEROLLERHELP)) ]
+         [(< keep 1) (begin
+                       (displayln "keep must be greater than 0.")
+                       (displayln DIEROLLERHELP)) ]
+         [(< dice keep) (begin
+                          (displayln "dice must be greater than or equal to keep.")
+                          (displayln DIEROLLERHELP)) ]
          [(< sides 1) (begin
                         (displayln "sides must be greater than 0.")
                         (displayln DIEROLLERHELP)) ]
