@@ -20,8 +20,10 @@
 ;; A dice-rolling command-line utility
 (command-line
  ;; remove the following comment to test from DrRacket
+ ;; #:argv (list "5")
  ;; #:argv (list "1" "10")
  ;; #:argv (list "3" "6" "+3")
+ ;; #:argv (list "3" "6" "+6" "2")
  ;; #:argv (list "--dice" "5" "--sides" "100" "--modifier" "+4" "--keep" "3")
  ;; #:argv (list "--dice" "4" "--sides" "6" "--keep" "3")
  ;; #:argv (list "--help")
@@ -29,16 +31,22 @@
  ""
  "where the <arguments> are"
  ""
+ "  <dice>"
+ "or"
  "  <dice> <sides>"
  "or"
  "  <dice> <sides> <modifier>" 
+ "or"
+ "  <dice> <sides> <modifier> <keep>" 
  ""
  "See the --dice, --sides, and --modifier parameters for details."
  ""
  "Examples:"
  ""
+ "  dieroller 5"
  "  dieroller 1 10"
  "  dieroller 3 6 +3"
+ "  dieroller 3 6 +6 2"
  "  dieroller --dice 5 --sides 100 --modifier +4 --keep 3"
  "  dieroller --dice 4 --sides 6 --keep 3"
  ""
@@ -48,7 +56,7 @@
                   (number-to-roll (string->number dice))]
  [("-k" "--keep") keep
                   ("Number of rolls to keep. Must be greater than 0 and less than or equal to <dice>."
-                   "(default to all)")
+                   "(default to number of dice)")
                   (number-to-keep (string->number keep))]
  [("-m" "--modifier") modifier
                       ("Modifier to the rolls. The first character can optionally"
@@ -63,9 +71,9 @@
  (let* ([dice (if (< (length arguments) 1)
                   (number-to-roll)
                   (string->number (first arguments)))]
-        [keep (if (< (number-to-keep) 1)
+        [keep (if (< (length arguments) 4)
                   dice
-                  (number-to-keep))]
+                  (string->number (fourth arguments)))]
         [sides (if (< (length arguments) 2)
                    (sides-per-die)
                    (string->number (second arguments)))]
