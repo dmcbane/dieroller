@@ -11,7 +11,7 @@
           [else (list + (string->number (string-append first value)) (string-append "+" first value))])))
 
 
-(define DIEROLLERHELP "Try 'dieroller --help' for more information.")(define number-of-rolls-to-keep (make-parameter null))
+(define DIEROLLERHELP "Try 'dieroller --help' for more information.")
 (define number-to-roll (make-parameter 1))
 (define sides-per-die (make-parameter 20))
 (define number-to-keep (make-parameter 0))
@@ -24,7 +24,7 @@
  ;; #:argv (list "1" "10")
  ;; #:argv (list "3" "6" "+3")
  ;; #:argv (list "3" "6" "+6" "2")
- ;; #:argv (list "--dice" "5" "--sides" "100" "--modifier" "+4" "--keep" "3")
+ #:argv (list "--keep" "2" "--dice" "3" "--modifier" "+6" "--sides" "6")
  ;; #:argv (list "--dice" "4" "--sides" "6" "--keep" "3")
  ;; #:argv (list "--help")
  #:usage-help
@@ -72,7 +72,9 @@
                   (number-to-roll)
                   (string->number (first arguments)))]
         [keep (if (< (length arguments) 4)
-                  dice
+                  (if (< (number-to-keep) 1)
+                      dice
+                      (number-to-keep))
                   (string->number (fourth arguments)))]
         [sides (if (< (length arguments) 2)
                    (sides-per-die)
