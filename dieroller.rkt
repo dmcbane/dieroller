@@ -24,7 +24,7 @@
  ;; #:argv (list "1" "10")
  ;; #:argv (list "3" "6" "+3")
  ;; #:argv (list "3" "6" "+6" "2")
- #:argv (list "--keep" "2" "--dice" "3" "--modifier" "+6" "--sides" "6")
+ ;; #:argv (list "--keep" "2" "--dice" "3" "--modifier" "+6" "--sides" "6")
  ;; #:argv (list "--dice" "4" "--sides" "6" "--keep" "3")
  ;; #:argv (list "--help")
  #:usage-help
