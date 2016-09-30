@@ -11,11 +11,14 @@
           [else (list + (string->number (string-append first value)) (string-append "+" first value))])))
 
 
-(define DIEROLLERHELP "Try 'dieroller --help' for more information.")(define number-of-rolls-to-keep (make-parameter null))
+(define DIEROLLERHELP "Try 'dieroller --help' for more information.")
+(define number-of-rolls-to-keep (make-parameter null))
 (define number-to-roll (make-parameter 1))
 (define sides-per-die (make-parameter 20))
 (define number-to-keep (make-parameter 0))
 (define modifier-to-rolls (make-parameter "0"))
+(define verbose-is-on (make-parameter false))
+
 
 ;; A dice-rolling command-line utility
 (command-line
@@ -43,6 +46,8 @@
  "  dieroller --dice 4 --sides 6 --keep 3"
  ""
  #:once-each
+ [("-v" "--verbose") ("Display additional information (default to false).")
+                     (verbose-is-on true)]
  [("-d" "--dice") dice ("Number of dice to roll.  Must be greater than 0."
                         "(default to 1)")
                   (number-to-roll (string->number dice))]
@@ -83,7 +88,8 @@
                                  (if (= dice keep)
                                      ""
                                      (string-append " keep " (number->string keep))))]
-        [myrand (lambda (x) (+ 1 (random sides)))])
+        [myrand (lambda (x) (+ 1 (random sides)))]
+        [verbose (verbose-is-on)])
    (cond [(< dice 1) (begin
                        (displayln "dice must be greater than 0.")
                        (displayln DIEROLLERHELP)) ]
@@ -94,15 +100,17 @@
                       [maxkeep (take (sort rands >) keep)]
                       [sum (apply + maxkeep)]
                       [adjusted (op sum amt)])
-                 (displayln dicetype)
-                 (display "Result: ")
-                 (if (> (length rands) 1)
+                 (when verbose
+                     (displayln dicetype)
+                     (display "Result: "))
+                 (when (and (> (length rands) 1) verbose)
                      (begin
                        (display "(")
                        (display (string-join (map number->string rands) " "))
                        (display ") "))
                      (null? null))
-                 (display "=> ")
+                 (when verbose
+                     (display "=> "))
                  (displayln adjusted)
                  )])
    ))
