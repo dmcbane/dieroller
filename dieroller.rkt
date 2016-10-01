@@ -10,6 +10,9 @@
           [(equal? first "*") (list * (string->number value) (string-append "*" value))]
           [else (list + (string->number (string-append first value)) (string-append "+" first value))])))
 
+;; repeat
+(define (repeater f count) (for ((i (in-range count))) (f)))
+
 
 (define DIEROLLERHELP "Try 'dieroller --help' for more information.")
 (define number-of-rolls-to-keep (make-parameter null))
@@ -18,6 +21,7 @@
 (define number-to-keep (make-parameter 0))
 (define modifier-to-rolls (make-parameter "0"))
 (define verbose-is-on (make-parameter false))
+(define iterations-to-roll (make-parameter 1))
 
 
 ;; A dice-rolling command-line utility
@@ -28,7 +32,7 @@
  ;; #:argv (list "3" "6" "+3")
  ;; #:argv (list "3" "6" "+6" "2")
  ;; #:argv (list "--keep" "2" "--dice" "3" "--modifier" "+6" "--sides" "6")
- ;; #:argv (list "--dice" "4" "--sides" "6" "--keep" "3")
+ ;; #:argv (list "--dice" "4" "--sides" "6" "--keep" "3" "--iterations" "6")
  ;; #:argv (list "--keep" "2" "--dice" "1" "--modifier" "+6" "--sides" "6")
  ;; #:argv (list "--help")
  #:usage-help
@@ -73,6 +77,9 @@
                    ("Number of sides per die. Must be greater than 0."
                     "(default to 20)")
                    (sides-per-die (string->number sides))]
+ [("-i" "--iterations") iterations ("Number of times to repeat the same rolls.  Must be greater than 0."
+                                    "(default to 1)")
+                        (iterations-to-roll (string->number iterations))]
  #:args arguments
  (let* ([dice (if (< (length arguments) 1)
                   (number-to-roll)
@@ -100,8 +107,36 @@
                                      ""
                                      (string-append " keep " (number->string keep))))]
         [myrand (lambda (x) (+ 1 (random sides)))]
-        [verbose (verbose-is-on)])
-   (cond [(< dice 1) (begin
+        [verbose (verbose-is-on)]
+        [reps (iterations-to-roll)]
+        [calc (lambda ()
+                (let* ([rands (build-list dice myrand)]
+                       [maxkeep (take (sort rands >) keep)]
+                       [sum (apply + maxkeep)]
+                       [adjusted (op sum amt)])
+                  (list maxkeep adjusted)))]
+        [calc1 (lambda (x) (second (calc)))]
+        [prnt (lambda ()
+                (let* ([ary (calc)]
+                       [values (first ary)]
+                       [result (second ary)])
+                  (when verbose
+                    (displayln dicetype)
+                    (display "Result: "))
+                  (when (and (> (length ary) 1) verbose)
+                    (begin
+                      (display "(")
+                      (display (string-join (map number->string values) " "))
+                      (display ") "))
+                    (null? null))
+                  (when verbose
+                    (display "=> "))
+                  (displayln result)
+                  ))])
+   (cond [(< reps 1) (begin
+                             (displayln "iterations must be greater than 0.")
+                             (displayln DIEROLLERHELP)) ]
+         [(< dice 1) (begin
                        (displayln "dice must be greater than 0.")
                        (displayln DIEROLLERHELP)) ]
          [(< keep 1) (begin
@@ -113,21 +148,5 @@
          [(< sides 1) (begin
                         (displayln "sides must be greater than 0.")
                         (displayln DIEROLLERHELP)) ]
-         [else (let* ([rands (build-list dice myrand)]
-                      [maxkeep (take (sort rands >) keep)]
-                      [sum (apply + maxkeep)]
-                      [adjusted (op sum amt)])
-                 (when verbose
-                     (displayln dicetype)
-                     (display "Result: "))
-                 (when (and (> (length rands) 1) verbose)
-                     (begin
-                       (display "(")
-                       (display (string-join (map number->string rands) " "))
-                       (display ") "))
-                     (null? null))
-                 (when verbose
-                     (display "=> "))
-                 (displayln adjusted)
-                 )])
+         [else (repeater prnt reps)])
    ))
