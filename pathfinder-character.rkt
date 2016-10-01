@@ -141,4 +141,31 @@
                       [abilities (lambda () (map (lambda (x) (x)) gen))]
                       [with-ratings (lambda (x) (let* ([a (abilities)]) (list a (rate-abilities a))))]
                       [all-characters (sort (map with-ratings (stream->list (in-range characters))) (lambda (x y) (< (last x) (last y))))])
-                 (displayln all-characters))])))
+                 (if verbose
+                     (map (lambda (char-with-rating)
+                              (let ([attrs (first char-with-rating)]
+                                    [rating (second char-with-rating)])
+                                (let ([str (first attrs)]
+                                      [dex (second attrs)]
+                                      [con (third attrs)]
+                                      [int (fourth attrs)]
+                                      [wis (fifth attrs)]
+                                      [chr (sixth attrs)])
+                                  (display "STR: ")
+                                  (display str)
+                                  (display " DEX: ")
+                                  (display dex)
+                                  (display " CON: ")
+                                  (display con)
+                                  (display " INT: ")
+                                  (display int)
+                                  (display " WIS: ")
+                                  (display wis)
+                                  (display " CHR: ")
+                                  (display chr)
+                                  (display " (")
+                                  (display rating)
+                                  (displayln ")")
+                                  attrs)))
+                                  all-characters)
+                     (displayln (map (lambda (char-with-rating) (first char-with-rating)) all-characters))))])))
