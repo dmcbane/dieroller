@@ -115,9 +115,8 @@
         [dice (cond [(equal? (generation-method) 'classic) 3]
                     [(equal? (generation-method) 'standard) 4]
                     [(equal? (generation-method) 'heroic) 2]
-                    [else pool-dist])]
+                    [else 1])]
         [keep (cond [(equal? (generation-method) 'heroic) 2]
-                    [(equal? (generation-method) 'pool) pool-dist]
                     [else 3])]
         [sides 6]
         [numabils 6]
@@ -136,7 +135,7 @@
          [(ormap (lambda (x) (< x 3)) pool-dist) (begin
                                                 (displayln "a minimum of 3 dice must be used for each attribute.")
                                                 (displayln PATHFINDERCHARHELP)) ]
-         [else (let* ([gen (cond [(equal? (generation-method) 'pool) (map (lambda (cnt) (attribute-generator cnt cnt sides amt)) pool-dist)]
+         [else (let* ([gen (cond [(equal? (generation-method) 'pool) (map (lambda (cnt) (attribute-generator cnt keep sides amt)) pool-dist)]
                                  [else (map (lambda (x) (attribute-generator dice keep sides amt)) (stream->list (in-range numabils)))])]
                       [abilities (lambda () (map (lambda (x) (x)) gen))]
                       [with-ratings (lambda (x) (let* ([a (abilities)]) (list a (rate-abilities a))))]
