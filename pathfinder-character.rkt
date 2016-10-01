@@ -81,14 +81,11 @@
  
  #:usage-help
  ""
- "where the <arguments> are"
- ""
- "See the --classic, --standard, --heroic and --pool parameters for details."
- ""
  "Examples:"
  ""
  "  pathfinder-character --classic -v --number 10"
  "  pathfinder-character -s -n 3"
+ ""
  
  #:once-any
  [("-c" "--classic") ("The classic method: 3D6 per ability.")
@@ -135,6 +132,9 @@
                              (displayln PATHFINDERCHARHELP)) ]
          [(not (equal? (length pool-dist) 6)) (begin
                                                 (displayln "dice per attribute must specify die quantity for six attributes.")
+                                                (displayln PATHFINDERCHARHELP)) ]
+         [(ormap (lambda (x) (< x 3)) pool-dist) (begin
+                                                (displayln "a minimum of 3 dice must be used for each attribute.")
                                                 (displayln PATHFINDERCHARHELP)) ]
          [else (let* ([gen (cond [(equal? (generation-method) 'pool) (map (lambda (cnt) (attribute-generator cnt cnt sides amt)) pool-dist)]
                                  [else (map (lambda (x) (attribute-generator dice keep sides amt)) (stream->list (in-range numabils)))])]
