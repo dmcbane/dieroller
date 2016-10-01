@@ -54,6 +54,15 @@
 (define (parse-dice-per-ability string)
   (map string->number (string-split string #px"[,/:]")))
 
+(define (attribute-generator dice keep sides modamt)
+  (let* ([myrand (lambda (x) (+ 1 (random sides)))])
+    (lambda ()
+      (let* ([rands (build-list dice myrand)]
+             [maxkeep (take (sort rands >) keep)]
+             [sum (apply + maxkeep)]
+             [adjusted (+ sum modamt)])
+        adjusted))))
+
 (define PATHFINDERCHARHELP "Try 'pathfinder-character --help' for more information.")
 (define generation-method (make-parameter 'standard))
 (define verbose-is-on (make-parameter false))
@@ -67,8 +76,9 @@
  ;; #:argv (list "--classic" "--number" "10" "--verbose")
  ;; #:argv (list "--standard" "--number" "10" "--verbose")
  ;; #:argv (list "--heroic" "--number" "10" "--verbose")
- #:argv (list "--pool" "3:3:4:6:4:4" "--number" "10" "--verbose")
+ ;; #:argv (list "--pool" "3:3:4:6:4:4" "--number" "10" "--verbose")
  ;; #:argv (list "--help")
+ 
  #:usage-help
  ""
  "where the <arguments> are"
@@ -79,7 +89,7 @@
  ""
  "  pathfinder-character --classic -v --number 10"
  "  pathfinder-character -s -n 3"
-
+ 
  #:once-any
  [("-c" "--classic") ("The classic method: 3D6 per ability.")
                      (generation-method 'classic)]
@@ -93,7 +103,8 @@
                               "follows: 3/3/3/3/3/9 with a minimum of 3 dice per ability.")
                   (begin
                     (generation-method 'pool)
-                    (dice-per-ability perability))]
+                    (dice-per-ability (parse-dice-per-ability perability)))]
+ 
  #:once-each
  [("-v" "--verbose") ("Display additional information (default to false).")
                      (verbose-is-on true)]
@@ -102,47 +113,32 @@
                     (number-to-roll (string->number n))]
  
  #:args arguments
- (let* ([dice (cond [(equal? (generation-method) 'classic) 3]
+ 
+ (let* ([pool-dist (dice-per-ability)]
+        [dice (cond [(equal? (generation-method) 'classic) 3]
                     [(equal? (generation-method) 'standard) 4]
                     [(equal? (generation-method) 'heroic) 2]
-                    [else 1])]
+                    [else pool-dist])]
         [keep (cond [(equal? (generation-method) 'heroic) 2]
-                    [(equal? (generation-method) 'pool) 1]
+                    [(equal? (generation-method) 'pool) pool-dist]
                     [else 3])]
         [sides 6]
+        [numabils 6]
         [amt (cond [(equal? (generation-method) 'heroic) 6]
                    [else 0])]
-        [myrand (lambda (x) (+ 1 (random sides)))]
         [verbose (verbose-is-on)]
-        [characters (number-to-roll)]
-        [oneability (lambda ()
-                      (let* ([rands (build-list dice myrand)]
-                             [maxkeep (take (sort rands >) keep)]
-                             [sum (apply + maxkeep)]
-                             [adjusted (+ sum amt)])
-                        adjusted))]
-        [numabils (cond [(equal? (generation-method) 'pool) 24]
-                         [else 6])]
-        [abilities (lambda ()
-                     (map (lambda (x) (oneability)) (stream->list (in-range numabils))))]
-        [ratings (lambda ()
-                   (let* ([a (abilities)]
-                          [r (rate-abilities a)])
-                     (list a r)))])
+        [characters (number-to-roll)])
+   ;; (lambda () (map (lambda (x) (oneability)) (stream->list (in-range numabils))))))
+   ;; (lambda () (let* ([a (abilities)]) (list a (rate-abilities a))))))
    (cond [(< characters 1) (begin
                              (displayln "number of characters must be greater than 0.")
                              (displayln PATHFINDERCHARHELP)) ]
-         [(< dice 1) (begin
-                       (displayln "dice must be greater than 0.")
-                       (displayln PATHFINDERCHARHELP)) ]
-         [(< keep 1) (begin
-                       (displayln "keep must be greater than 0.")
-                       (displayln PATHFINDERCHARHELP)) ]
-         [(< dice keep) (begin
-                          (displayln "dice must be greater than or equal to keep.")
-                          (displayln PATHFINDERCHARHELP)) ]
-         [(< sides 1) (begin
-                        (displayln "sides must be greater than 0.")
-                        (displayln PATHFINDERCHARHELP)) ]
-         [else (displayln (sort (map (lambda (x) (ratings)) (stream->list (in-range characters))) (lambda (x y) (< (last x) (last y)))))])
-   ))
+         [(not (equal? (length pool-dist) 6)) (begin
+                                                (displayln "dice per attribute must specify die quantity for six attributes.")
+                                                (displayln PATHFINDERCHARHELP)) ]
+         [else (let* ([gen (cond [(equal? (generation-method) 'pool) (map (lambda (cnt) (attribute-generator cnt cnt sides amt)) pool-dist)]
+                                 [else (map (lambda (x) (attribute-generator dice keep sides amt)) (stream->list (in-range numabils)))])]
+                      [abilities (lambda () (map (lambda (x) (x)) gen))]
+                      [with-ratings (lambda (x) (let* ([a (abilities)]) (list a (rate-abilities a))))]
+                      [all-characters (sort (map with-ratings (stream->list (in-range characters))) (lambda (x y) (< (last x) (last y))))])
+                 (displayln all-characters))])))
