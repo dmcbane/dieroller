@@ -155,7 +155,7 @@
  ;; #:argv (list "--pool" "3:3:4:6:4:4" "--number" "10" "--verbose")
  ;; #:argv (list "-p" "epic" "-n" "10" "-v")
  ;; #:argv (list "--help")
-
+ 
  #:usage-help
  ""
  "Examples:"
@@ -163,7 +163,7 @@
  "  pathfinder-character --classic -v --number 10"
  "  pathfinder-character -s -n 3"
  ""
-
+ 
  #:once-any
  [("-c" "--classic") ("The classic method: 3D6 per ability.")
                      (generation-method 'classic)]
@@ -185,16 +185,16 @@
                       (begin
                         (generation-method 'purchase)
                         (purchase-points (campaign-type->total-purchase-points (parse-purchase-type purchasetype))))]
-
+ 
  #:once-each
  [("-v" "--verbose") ("Display additional information (default to false).")
                      (verbose-is-on true)]
  [("-n" "--number") n ("Number of characters to roll. Must be greater than 0."
                        "(default to 1)")
                     (number-to-roll (string->number n))]
-
+ 
  #:args arguments
-
+ 
  (let* ([pool-dist (dice-per-ability)]
         [dice (method->dice (generation-method))]
         [keep (method->keep (generation-method))]
@@ -214,6 +214,9 @@
          [(ormap (lambda (x) (< x 3)) pool-dist) (begin
                                                    (displayln "a minimum of 3 dice must be used for each attribute.")
                                                    (displayln PATHFINDERCHARHELP)) ]
+         [(not (equal? (for/sum ([x pool-dist]) x) 24)) (begin
+                                                          (displayln "you must specify a total of twenty-four dice for the pool.")
+                                                          (displayln PATHFINDERCHARHELP)) ]
          [else (let* ([ability-gen (cond [(equal? (generation-method) 'pool) (map (lambda (cnt) (attribute-generator cnt keep sides amt)) pool-dist)]
                                          [(equal? (generation-method) 'purchase) 'nil]
                                          [else (map (lambda (x) (attribute-generator dice keep sides amt)) (stream->list (in-range numabils)))])]
