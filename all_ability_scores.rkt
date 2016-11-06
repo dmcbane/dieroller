@@ -1,6 +1,7 @@
 #lang racket
 
-(define l (stream->list (in-range 3 19)))
+(define l (stream->list (in-range 45 0 -1)))
+(define legal (stream->list (in-range 18 6 -1)))
 
 ;; cost to buy ability score
 ;; 3 through 6 are not legal values
@@ -112,12 +113,12 @@
 
 ;; (call-with-output-file "all_scores.csv"  #:exists 'truncate
 ;;   (lambda (out)
-;;     (for ([str '(18 17 16 15 14 13 12 11 10 9 8 7 6 5 4 3)])
-;;       (for ([dex '(18 17 16 15 14 13 12 11 10 9 8 7 6 5 4 3)])
-;;         (for ([con '(18 17 16 15 14 13 12 11 10 9 8 7 6 5 4 3)])
-;;           (for ([int '(18 17 16 15 14 13 12 11 10 9 8 7 6 5 4 3)])
-;;             (for ([wis '(18 17 16 15 14 13 12 11 10 9 8 7 6 5 4 3)])
-;;               (for ([chr '(18 17 16 15 14 13 12 11 10 9 8 7 6 5 4 3)])
+;;     (for ([str l])
+;;       (for ([dex l])
+;;         (for ([con l])
+;;           (for ([int l])
+;;             (for ([wis l])
+;;               (for ([chr l])
 ;;                 (let ([lst (list str dex con int wis chr)])
 ;;                   (display (rate-abilities lst) out)
 ;;                   (display ", " out)
@@ -130,12 +131,12 @@
 ;; brute force build all possible sets of scores in a sorted list
 ;; but use the characteristics of sets to keep only the unique
 ;; combinations of cost, rate, and abilities (ignoring the ability order)
-(for ([str '(18 17 16 15 14 13 12 11 10 9 8 7 6 5 4 3)])
-  (for ([dex '(18 17 16 15 14 13 12 11 10 9 8 7 6 5 4 3)])
-    (for ([con '(18 17 16 15 14 13 12 11 10 9 8 7 6 5 4 3)])
-      (for ([int '(18 17 16 15 14 13 12 11 10 9 8 7 6 5 4 3)])
-        (for ([wis '(18 17 16 15 14 13 12 11 10 9 8 7 6 5 4 3)])
-          (for ([chr '(18 17 16 15 14 13 12 11 10 9 8 7 6 5 4 3)])
+(for ([str l])
+  (for ([dex l])
+    (for ([con l])
+      (for ([int l])
+        (for ([wis l])
+          (for ([chr l])
             (let* ([abils (sort (list str dex con int wis chr) >)]
                    [rate (rate-abilities abils)]
                    [cost (cost-abilities abils)])
@@ -160,12 +161,12 @@
 ;; brute force build all possible sets of scores in a sorted list
 ;; but use the characteristics of sets to keep only the unique
 ;; combinations of cost, rate, and abilities (ignoring the ability order)
-(for ([str '(18 17 16 15 14 13 12 11 10 9 8 7)])
-  (for ([dex '(18 17 16 15 14 13 12 11 10 9 8 7)])
-    (for ([con '(18 17 16 15 14 13 12 11 10 9 8 7)])
-      (for ([int '(18 17 16 15 14 13 12 11 10 9 8 7)])
-        (for ([wis '(18 17 16 15 14 13 12 11 10 9 8 7)])
-          (for ([chr '(18 17 16 15 14 13 12 11 10 9 8 7)])
+(for ([str legal])
+  (for ([dex legal])
+    (for ([con legal])
+      (for ([int legal])
+        (for ([wis legal])
+          (for ([chr legal])
             (let* ([abils (sort (list str dex con int wis chr) >)]
                    [rate (rate-abilities abils)]
                    [cost (cost-abilities abils)])
