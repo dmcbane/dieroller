@@ -3,8 +3,17 @@
 (require memoize)
 
 ;; cost to buy ability score
+;; 1 through 6 and 19 - 45 are not legal values
+;; values and are extrapolations for comparison
+;; only
 (define (ability->cost n)
-  (hash-ref #hash((7 . -4)
+  (hash-ref #hash((1 . -25)
+                  (2 . -20)
+                  (3 . -16)
+                  (4 . -12)
+                  (5 . -9)
+                  (6 . -6)
+                  (7 . -4)
                   (8 . -2)
                   (9 . -1)
                   (10 . 0)
@@ -15,14 +24,41 @@
                   (15 . 7)
                   (16 . 10)
                   (17 . 13)
-                  (18 . 17))
+                  (18 . 17)
+                  (19 . 21)
+                  (20 . 26)
+                  (21 . 31)
+                  (22 . 37)
+                  (23 . 43)
+                  (24 . 50)
+                  (25 . 57)
+                  (26 . 65)
+                  (27 . 73)
+                  (28 . 82)
+                  (29 . 91)
+                  (30 . 101)
+                  (31 . 111)
+                  (32 . 122)
+                  (33 . 133)
+                  (34 . 145)
+                  (35 . 157)
+                  (36 . 170)
+                  (37 . 183)
+                  (38 . 197)
+                  (39 . 211)
+                  (40 . 226)
+                  (41 . 241)
+                  (42 . 257)
+                  (43 . 273)
+                  (44 . 290)
+                  (45 . 307))
             n))
 
-(define (cost-abilities ab)
+(define (abilities-cost ab)
   (apply + (map ability->cost ab)))
 
-;; get modifier from ability
-(define (ability->modifier n)
+;; get modifier from ability 
+(define (ability->bonus-points n)
   (hash-ref #hash((1 . -5)
                   (2 . -4)
                   (3 . -4)
@@ -70,8 +106,8 @@
                   (45 . 17))
             n))
 
-(define (rate-abilities ab)
-  (apply + (map ability->modifier ab)))
+(define (bonus-points-of-abilities ab)
+  (apply + (map ability->bonus-points ab)))
 
 (define (parse-dice-per-ability string)
   (map string->number (string-split string #px"[,/:]")))
@@ -101,21 +137,22 @@
         adjusted))))
 
 (define/memo (legal-purchase-uniq-sets)
+  (define l (stream->list (in-range 18 6 -1)))
   ;; build list of uniq ability scores with cost and rate
   (define legal_uniq (list->mutable-set '()))
   ;; brute force build all possible sets of scores in a sorted list
   ;; but use the characteristics of sets to keep only the unique
   ;; combinations of cost, rate, and abilities (ignoring the ability order)
-  (for ([str '(18 17 16 15 14 13 12 11 10 9 8 7)])
-    (for ([dex '(18 17 16 15 14 13 12 11 10 9 8 7)])
-      (for ([con '(18 17 16 15 14 13 12 11 10 9 8 7)])
-        (for ([int '(18 17 16 15 14 13 12 11 10 9 8 7)])
-          (for ([wis '(18 17 16 15 14 13 12 11 10 9 8 7)])
-            (for ([chr '(18 17 16 15 14 13 12 11 10 9 8 7)])
+  (for ([str l])
+    (for ([dex l])
+      (for ([con l])
+        (for ([int l])
+          (for ([wis l])
+            (for ([chr l])
               (let* ([abils (sort (list str dex con int wis chr) >)]
-                     [rate (rate-abilities abils)]
-                     [cost (cost-abilities abils)])
-                (set-add! legal_uniq (list cost rate abils)))))))))
+                     [bp (bonus-points-of-abilities abils)]
+                     [cost (abilities-cost abils)])
+                (set-add! legal_uniq (list cost bp abils)))))))))
   (for/list ([i legal_uniq]) i))
 
 (define (purchase-generator points-available)
@@ -222,7 +259,7 @@
                                          [else (map (lambda (x) (attribute-generator dice keep sides amt)) (stream->list (in-range numabils)))])]
                       [abilities (cond [(equal? (generation-method) 'purchase) (purchase-generator (purchase-points))]
                                        [else (lambda () (map (lambda (x) (x)) ability-gen))])]
-                      [with-ratings (lambda (x) (let* ([a (abilities)]) (list a (rate-abilities a))))]
+                      [with-ratings (lambda (x) (let* ([a (abilities)]) (list a (bonus-points-of-abilities a))))]
                       [all-characters (sort (map with-ratings (stream->list (in-range characters))) (lambda (x y) (< (last x) (last y))))])
                  (if verbose
                      (map (lambda (char-with-rating)

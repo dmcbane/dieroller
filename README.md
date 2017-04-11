@@ -5,9 +5,9 @@ command line parameters.
 
 ```
 dieroller [ <option> ... ] [<arguments>] ...
-  
+
   where the <arguments> are
-  
+
     <dice>
   or
     <dice> <sides>
@@ -15,18 +15,18 @@ dieroller [ <option> ... ] [<arguments>] ...
     <dice> <sides> <modifier>
   or
     <dice> <sides> <modifier> <keep>
-  
+
   See the --dice, --sides, and --modifier parameters for details.
-  
+
   Examples:
-  
+
     dieroller 5
     dieroller 1 10
     dieroller 3 6 +3
     dieroller 3 6 +6 2
     dieroller --dice 5 --sides 100 --modifier +4 --keep 3
     dieroller --dice 4 --sides 6 --keep 3
-  
+
  where <option> is one of
   -v, --verbose : Display additional information (default to false).
   -d <dice>, --dice <dice> : Number of dice to roll.  Must be greater than 0.
@@ -50,12 +50,12 @@ generated.
 
 ```
 pathfinder-character [ <option> ... ] [<arguments>] ...
-  
+
   Examples:
-  
+
     pathfinder-character --classic -v --number 10
     pathfinder-character -s -n 3
-  
+
  where <option> is one of
 / -c, --classic : The classic method: 3D6 per ability.
 | -s, --standard : The standard method: 4D6 keep high 3 per ability.
@@ -85,8 +85,9 @@ From the command line, you can build either application with raco.
 raco exe dieroller.rkt
 ```
 
-or 
+or
 
 ```
+raco pkg install memoize
 raco exe pathfinder-character.rkt
 ```
