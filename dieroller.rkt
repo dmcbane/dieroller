@@ -100,12 +100,13 @@
         [dicetype (string-append (number->string dice)
                                  "D"
                                  (number->string sides)
+                                 (if (= dice keep)
+                                     ""
+                                     (string-append "K" (number->string keep)))
                                  (if (equal? (third modifier) "+0")
                                      ""
                                      (third modifier))
-                                 (if (= dice keep)
-                                     ""
-                                     (string-append " keep " (number->string keep))))]
+                                 )]
         [myrand (lambda (x) (+ 1 (random sides)))]
         [verbose (verbose-is-on)]
         [reps (iterations-to-roll)]
@@ -121,8 +122,8 @@
                        [values (first ary)]
                        [result (second ary)])
                   (when verbose
-                    (displayln dicetype)
-                    (display "Result: "))
+                    (display dicetype)
+                    (display " "))
                   (when (and (> (length ary) 1) verbose)
                     (begin
                       (display "(")
